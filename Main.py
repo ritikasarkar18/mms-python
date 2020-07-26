@@ -67,8 +67,16 @@ def main():
         if block_count >= 3 :
             return True
 
+    def get_available_directions(position):
+        available_directions = []
+        for direction in range(4):
+            if not is_blocked(move(position,direction)):
+                available_directions.append(direction)
+        return available_directions
 
-    while True:
+    def Mouse():
+
+        nonlocal maze, present_position, present_direction, prev_position
 
         if API.wallFront() and API.wallRight() and API.wallLeft():   # turn back
             API.turnLeft()
@@ -101,8 +109,10 @@ def main():
         prev_position = present_position.copy()
         present_position = move(present_position, present_direction)
         if present_position in goals:
-            break
+            return
+        Mouse()
 
+    Mouse()
 
 if __name__ == "__main__":
     main()
