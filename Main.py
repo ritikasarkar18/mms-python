@@ -32,24 +32,45 @@ def main():
 
     maze = [[ 0 for i in range(API.mazeHeight()) ] for j in range(API.mazeWidth())]
 
+
     def next_position(position, direction):
         return [position[0]+directions[direction][0],position[1]+directions[direction][1]]
+
 
     def move(position, direction):
         position[0] += directions[direction][0]
         position[1] += directions[direction][1]
         return position
 
+
     def get_value(position):
         return maze[position[0]][position[1]]
 
+
     def set_value(position, direction):
         nonlocal maze
-        maze[position[0]][position[1]] = 1
+        maze[position[0]][position[1]] = -1
+
+    def is_blocked(position):
+        block_count = 0
+        if API.wallFront():
+            block_count += 1
+        if API.wallRight():
+            block_count += 1
+        if API.wallLeft():
+            block_count += 1
+        if get_value(prev_position) == -1:
+            block_count += 1
+
+        if block_count == 4 :
+            log("Error :  Full Block")
+        if block_count >= 3 :
+            return True
+
 
     while True:
 
-        if API.wallFront() and API.wallRight() and API.wallLeft():
+        if API.wallFront() and API.wallRight() and API.wallLeft():   # turn back
             API.turnLeft()
             API.turnLeft()
             present_direction = (present_direction+2)%4
@@ -59,7 +80,7 @@ def main():
             API.setText(*present_position, "-1")
 
 
-        if API.wallLeft() and API.wallRight() and maze[prev_position[0]][prev_position[1]]==-1:
+        if is_blocked(present_position):
             set_value(present_position, -1)
 
             API.setColor(*present_position, "R")
@@ -70,15 +91,18 @@ def main():
             API.turnLeft()
             present_direction = (present_direction+3)%4
 
+
         while API.wallFront():
             API.turnRight()
             present_direction = (present_direction+1)%4
-        
+
+
         API.moveForward()
         prev_position = present_position.copy()
         present_position = move(present_position, present_direction)
         if present_position in goals:
             break
+
 
 if __name__ == "__main__":
     main()
