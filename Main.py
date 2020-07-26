@@ -66,18 +66,23 @@ def main():
             log("Error :  Full Block")
         if block_count >= 3 :
             return True
+        return False
 
-    def get_available_directions(position):
-        available_directions = []
-        for direction in range(4):
-            if not is_blocked(move(position,direction)):
-                available_directions.append(direction)
+    def get_available_directions(position, direction):
+        available_directions = [] 
+        if not API.wallFront() and get_value(move(position,direction))!=-1:
+            available_directions.append(direction)
+        if not API.wallLeft() and get_value(move(position,(direction+3)%4))!=-1:
+            available_directions.append((direction+3)%4)
+        if not API.wallRight() and get_value(move(position,(direction+1)%4))!=-1:
+            available_directions.append((direction+3)%4)
         return available_directions
 
     def Mouse():
 
         nonlocal maze, present_position, present_direction, prev_position
 
+        #####    CHECKING BLOCKED PATHS    #####
         if API.wallFront() and API.wallRight() and API.wallLeft():   # turn back
             API.turnLeft()
             API.turnLeft()
@@ -94,7 +99,8 @@ def main():
             API.setColor(*present_position, "R")
             API.setText(*present_position, "-1")
 
-
+        #####    FLOODFILL    #####
+        openings = get_available_directions(present_position.copy(), present_direction)
         if not API.wallLeft():
             API.turnLeft()
             present_direction = (present_direction+3)%4
@@ -109,10 +115,16 @@ def main():
         prev_position = present_position.copy()
         present_position = move(present_position, present_direction)
         if present_position in goals:
+            log("Reached finish point")
             return
-        Mouse()
+        
+        if present_position==[0,0]:
+            log("Came back")
+            return
 
-    Mouse()
+        Mouse()     #recursive call
+
+    Mouse()     #launcher call
 
 if __name__ == "__main__":
     main()
