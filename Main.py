@@ -32,8 +32,20 @@ def main():
 
     maze = [[ 0 for i in range(API.mazeHeight()) ] for j in range(API.mazeWidth())]
 
-    def one_step_position(position, direction):
-        pass
+    def next_position(position, direction):
+        return [position[0]+directions[direction][0],position[1]+directions[direction][1]]
+
+    def move(position, direction):
+        position[0] += directions[direction][0]
+        position[1] += directions[direction][1]
+        return position
+
+    def get_value(position):
+        return maze[position[0]][position[1]]
+
+    def set_value(position, direction):
+        nonlocal maze
+        maze[position[0]][position[1]] = 1
 
     while True:
 
@@ -41,14 +53,18 @@ def main():
             API.turnLeft()
             API.turnLeft()
             present_direction = (present_direction+2)%4
+            set_value(present_position, -1)
+            
             API.setColor(*present_position, "R")
             API.setText(*present_position, "-1")
-            maze[present_position[0]][present_position[1]] = -1
+
 
         if API.wallLeft() and API.wallRight() and maze[prev_position[0]][prev_position[1]]==-1:
+            set_value(present_position, -1)
+
             API.setColor(*present_position, "R")
             API.setText(*present_position, "-1")
-            maze[present_position[0]][present_position[1]] = -1
+
 
         if not API.wallLeft():
             API.turnLeft()
@@ -60,8 +76,7 @@ def main():
         
         API.moveForward()
         prev_position = present_position.copy()
-        present_position[0] += directions[present_direction][0]
-        present_position[1] += directions[present_direction][1]
+        present_position = move(present_position, present_direction)
         if present_position in goals:
             break
 
