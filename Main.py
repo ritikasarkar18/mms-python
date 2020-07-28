@@ -32,16 +32,25 @@ def main():
 
     maze = [[ 0 for i in range(API.mazeHeight()) ] for j in range(API.mazeWidth())]
 
+    def set_value(position, value):
+        nonlocal maze 
+        maze[position[0]][position[1]] = value
+        API.setText(*position, "-1")
+        API.setColor(*position, "R")
+
+    def get_value(position):
+        return maze[position[0]][position[1]]
+
     def get_openings(position):
         openings = []
         for code,i in enumerate(directions):
-            offset  = direction-code
+            offset  = ((direction-code)+4)%4
             if abs(offset)==2:
                 continue
             new_0 = position[0]+i[0]
             new_1 = position[1]+i[1]
             if(new_0 in range(0 , API.mazeWidth()) and new_1 in range(0, API.mazeHeight())) and maze[new_0][new_1]==0:
-                if (offset==0 and not API.wallFront()) or (offset==-1 and not API.wallRight()) or (offset==1 and not API.wallLeft()):
+                if (offset==0 and not API.wallFront()) or (offset==3 and not API.wallRight()) or (offset==1 and not API.wallLeft()):
                     openings.append([new_0, new_1])
                     continue
         return openings
@@ -50,10 +59,8 @@ def main():
         nonlocal direction, present, past
         change = [to_position[0]-from_position[0],to_position[1]-from_position[1]]
         new_direction = directions.index(change)
-        log(new_direction)
 
         offset = ((new_direction - direction)+4)%4
-        log(offset)
         if offset==1:
             API.turnRight()
         elif offset==3:
@@ -74,15 +81,13 @@ def main():
 
     def traverse(position):
         check(position)
+        set_value(position, -1)
         openings = get_openings(position)
-        log(openings)
         if openings == [] :
             return
         for i in openings:
-            log("traversing from "+str(position)+" to "+str(i))
             move_to(position,i)
             traverse(i)
-            log("traversing from "+str(i)+" to "+str(position))
             move_to(i,position)
 
     traverse([0,0])
