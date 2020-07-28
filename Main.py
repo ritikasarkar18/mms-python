@@ -7,22 +7,24 @@ def log(string):
 
 def main():
 
-    for i in range(API.mazeWidth()):
-        for j in range(API.mazeHeight()):
-            API.setText(i,j,"0")
+    def fill_maze():
+        for i in range(API.mazeWidth()):
+            for j in range(API.mazeHeight()):
+                API.setText(i,j,"0")
 
-    log("Started")
-    API.setColor(0, 0, "G")
-    API.setText(0, 0, "Start")
-    API.setColor(8, 8, "C")
-    API.setText(8, 8, "Fin")
-    API.setColor(7, 8, "C")
-    API.setText(7, 8, "Fin")
-    API.setColor(8, 7, "C")
-    API.setText(8, 7, "Fin")
-    API.setColor(7, 7, "C")
-    API.setText(7, 7, "Fin")
+        log("Started")
+        API.setColor(0, 0, "G")
+        API.setText(0, 0, "Start")
+        API.setColor(8, 8, "C")
+        API.setText(8, 8, "Fin")
+        API.setColor(7, 8, "C")
+        API.setText(7, 8, "Fin")
+        API.setColor(8, 7, "C")
+        API.setText(8, 7, "Fin")
+        API.setColor(7, 7, "C")
+        API.setText(7, 7, "Fin")
 
+    REVERSE_OPENINGS = True    #True for right priority, False for left
     direction = 0
     present = [0,0]
     past = [0,0]
@@ -52,10 +54,12 @@ def main():
                 continue
             new_0 = position[0]+i[0]
             new_1 = position[1]+i[1]
-            if(new_0 in range(0 , API.mazeWidth()) and new_1 in range(0, API.mazeHeight())) and maze[new_0][new_1]==0:
+            if(new_0 in range(0 , API.mazeWidth()) and new_1 in range(0, API.mazeHeight())) and maze[new_0][new_1]!=-1:
                 if (offset==0 and not API.wallFront()) or (offset==3 and not API.wallRight()) or (offset==1 and not API.wallLeft()):
                     openings.append([new_0, new_1])
                     continue
+        if REVERSE_OPENINGS :
+            openings = openings[::-1]
         return openings
 
     def move_to(from_position, to_position):
@@ -104,7 +108,8 @@ def main():
         else:
             set_value(position, min(values))
             return min(values)+1
-
+    
+    fill_maze()
     traverse([0,0], 0)
     log("Ended")
   
