@@ -35,8 +35,11 @@ def main():
     def set_value(position, value):
         nonlocal maze 
         maze[position[0]][position[1]] = value
-        API.setText(*position, "-1")
-        API.setColor(*position, "R")
+        API.setText(*position, str(value))
+        if value==-1:
+            API.setColor(*position, "R")
+        else:
+            API.setColor(*position, "Y")
 
     def get_value(position):
         return maze[position[0]][position[1]]
@@ -75,22 +78,35 @@ def main():
         present = to_position.copy()
 
     def check(position):
+        if position in goals :
+            return True
         if False:
             sys.exit()
-        pass
 
-    def traverse(position):
-        check(position)
+    def traverse(position,value):
+        end  = check(position)
+        if end:
+            return 0
+        values = []
         set_value(position, -1)
         openings = get_openings(position)
         if openings == [] :
-            return
+            set_value(position, -1)
+            return -1
         for i in openings:
             move_to(position,i)
-            traverse(i)
+            values.append(traverse(i, value+1))
             move_to(i,position)
+        log(values)
+        values = [i for i in values if i>=0]
+        if values==[]:
+            set_value(position, -1)
+            return -1
+        else:
+            set_value(position, min(values))
+            return min(values)+1
 
-    traverse([0,0])
+    traverse([0,0], 0)
     log("Ended")
   
 if __name__ == "__main__":
