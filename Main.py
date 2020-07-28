@@ -24,7 +24,6 @@ def main():
     API.setText(7, 7, "Fin")
 
     present_position = [0,0]
-    present_direction = 0
     prev_position = [0,0]
 
     goals = [ [8,8], [8,7], [7,8], [7,7] ]
@@ -44,8 +43,10 @@ def main():
 
 
     def get_value(position):
-        return maze[position[0]][position[1]]
-
+        try :
+            return maze[position[0]][position[1]]
+        except IndexError :      #overflow or underflow of indexes
+            return -1
 
     def set_value(position, direction):
         nonlocal maze
@@ -70,50 +71,49 @@ def main():
 
     def get_available_directions(position, direction):
         available_directions = [] 
-        if not API.wallFront() and get_value(move(position,direction))!=-1:
+        if API.wallFront()==False and get_value(move(position.copy(),direction))!=-1:
             available_directions.append(direction)
-        if not API.wallLeft() and get_value(move(position,(direction+3)%4))!=-1:
+        if API.wallLeft()==False and get_value(move(position.copy(),(direction+3)%4))!=-1:
             available_directions.append((direction+3)%4)
-        if not API.wallRight() and get_value(move(position,(direction+1)%4))!=-1:
-            available_directions.append((direction+3)%4)
+        if API.wallRight()==False and get_value(move(position.copy(),(direction+1)%4))!=-1:
+            available_directions.append((direction+1)%4)
         return available_directions
 
-    def Mouse():
+    def steer_to_direction(present, target):
+        if abs(present-target)==2:
+            API.turnLeft()
+            API.turnLeft()
+        elif target-present==1 or target-present==-3:
+            API.turnRight()
+        elif target-present==-1 or target-present==3:
+            API.turnLeft()
 
-        nonlocal maze, present_position, present_direction, prev_position
+    def examine(present_direction):
+
+        nonlocal maze, present_position, prev_position
 
         #####    CHECKING BLOCKED PATHS    #####
         if API.wallFront() and API.wallRight() and API.wallLeft():   # turn back
+            log("3 way walls")
             API.turnLeft()
             API.turnLeft()
             present_direction = (present_direction+2)%4
             set_value(present_position, -1)
+            API.moveForward()
             
             API.setColor(*present_position, "R")
             API.setText(*present_position, "-1")
-
+            return 
 
         if is_blocked(present_position):
+            log("Blocked tile")
             set_value(present_position, -1)
 
             API.setColor(*present_position, "R")
             API.setText(*present_position, "-1")
-
-        #####    FLOODFILL    #####
-        openings = get_available_directions(present_position.copy(), present_direction)
-        if not API.wallLeft():
-            API.turnLeft()
-            present_direction = (present_direction+3)%4
-
-
-        while API.wallFront():
-            API.turnRight()
-            present_direction = (present_direction+1)%4
-
-
-        API.moveForward()
-        prev_position = present_position.copy()
-        present_position = move(present_position, present_direction)
+            return
+            
+        #####    IMPORTANT LOCATIONS    #####
         if present_position in goals:
             log("Reached finish point")
             return
@@ -121,10 +121,6 @@ def main():
         if present_position==[0,0]:
             log("Came back")
             return
-
-        Mouse()     #recursive call
-
-    Mouse()     #launcher call
 
 if __name__ == "__main__":
     main()
