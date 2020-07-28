@@ -97,7 +97,6 @@ def main():
             move_to(position,i)
             values.append(traverse(i, value+1))
             move_to(i,position)
-        log(values)
         values = [i for i in values if i>=0]
         if values==[]:
             set_value(position, -1)
