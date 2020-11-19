@@ -2,8 +2,28 @@ import API
 import sys
 import time
 
-mouse = None
-manager = None  
+def log(string):
+    sys.stderr.write("{}\n".format(string))
+    sys.stderr.flush()
+
+mappings = {}
+current_direction = 0
+x = 0
+y = 0
+
+direction_to_move = {
+        (0,-1)  : 2,
+        (0,1) : 0,
+        (1,0)  : 4,
+        (-1,0) : 1
+        }
+
+direction_to_move_inverse = {
+        0 : (0,-1),
+        1 : (0,1),
+        2 : (1,0),
+        3 : (-1,0)
+        }
 
 # Node to solve in the shortest path algorithm 
 class Node():
@@ -13,104 +33,111 @@ class Node():
         self.y = y
         self.visited = False
         self.isEnd = False
-        self.children = {}
+        self.neighbours = set({})
         self.pos = (self.x,self.y)
+        self.processed = False
 
     def n_neighbours(self):
         return len(self.children)
 
-
-# Manager will facilitate fuctionalities and conversions related to the maze
-class MazeManager():
-
-    def __init__(self):
-        self.mapping = {}                           # stores a map to (x,y) => Node object
-
-    def connect(self, node1, node2):                # connect 2 nodes in memory
-        node1.children.add(node2)
-        node2.children.add(node1)
-
-    def turnToNode(self, mouse, node):              # provide physical direcives to mouse
-        pass
-
-    def turnToLocation(self, mouse, pos):           # provide physical direcives to mouse
-        pass
-
-    def turnToDirection(self, mouse, direction):    # turn to a particular direction
-        pass
-
-    def getPos(self, mouse, direction):
-        pass
-
-    def add(self, x,y):
-        pass
-
-    def get(self, x,y):
-        try:
-            return a[str((x,y))]
-        except:
-            a[str((x,y))] = Node(x,y)
-            return a[str((x,y))]
-        pass
+# CONNECT 2 NODES
+def connect(node1, node2):
+    node1.neighbours.add(node2)
+    node2.neighbours.add(node1)
 
 
-# Mouse will store info regarding it's position and direction
-class Mouse():
+# MOVE API FROM SOURCE POSITION TO DESTINATION POSITION
+def apiMove(source, destination):
+    global current_direction
+    dx = destination.x - source.x
+    dy = destination.y - source.y
+    future_direction = direction_to_move[(dx,dy)]
 
-    def __init__(self):
-        self.node = None 
-        self.direction = None
-        self.pos = None
-        self.api = API
-
-    def scan(self):                             # scan the neighbours and walls around it
-        #check forward
-        if not self.api.wallFront():
-            n = manager.getPos(self, 'f') 
-            manager.connect(self.node, manager.get(n.x,n.y))
-        #check left
-        if not self.api.wallLeft():
-            n = manager.getPos(self, 'l') 
-            manager.connect(self.node, manager.get(n.x,n.y))
-        #check right
-        if not self.api.wallRight():
-            n = manager.getPos(self, 'r') 
-            manager.connect(self.node, manager.get(n.x,n.y))
-
-    def left(self):                             # wrapper of turnLeft()
-        self.api.turnLeft()
-
-    def right(self):                            # wrapper of turnRight()
-        self.api.turnRight()
-
-    def forward(self, distance = 1):            # wrapper of moveForward()
-        self.api.moveForward(distance)
-
-    def moveTo(self, node):
-        turnToNode(self, node)
-        self.forward()
-        self.node = node
-        self.pos = self.node.pos
+    diff = future_direction-current_direction
+    if(diff==1 or diff==3):
+        API.turnLeft()
+    if(diff==2 or diff==-2):
+        API.turnLeft()
+        API.turnLeft()
+    if(diff==-3 or diff==-1):
+        API.turnRight()
+    API.moveForward()
+    current_direction = future_direction
 
 
-def traverse(parent):
-    for i in parent.children:
-        mouse.moveTo(i)
-    mouse.moveTo(parent)
+# USE CURRENT DIRECTION AND LOCAL ADVANCEMENT DIRECTION TO GET FUTURE POSITION
+def directionMapper(direction_character):
+    global current_direction
+    d_num = 0
+    if(direction_character=='L'):
+        d_num = -1
+    elif(direction_character=='R'):
+        d_num = 1
+    elif(direction_character=='D'):
+        d_num = 2
+    global_direction = (current_direction+d_num+4)%4
+    changes = direction_to_move_inverse[global_direction]
+    return (x-changes[0], y-changes[1])
 
 
-def log(string):
-    sys.stderr.write("{}\n".format(string))
-    sys.stderr.flush()
+# SCAN THE NEIGHBOURS OF A NODE
+def scan(node):
+    order = [1,2,3]
+
+    for i in order:
+        if i==1:
+            if not API.wallLeft():
+                predicted_pos = directionMapper('L')
+                node2 = None
+                try : 
+                    node2  = mappings[predicted_pos]
+                except:
+                    mappings[predicted_pos] = Node(*predicted_pos)
+                    node2  = mappings[predicted_pos]
+                connect(node, node2)
+                log("L added")
+        if i==2:
+            if not API.wallFront():
+                predicted_pos = directionMapper('U')
+                node2 = None
+                try : 
+                    node2  = mappings[predicted_pos]
+                except:
+                    mappings[predicted_pos] = Node(*predicted_pos)
+                    node2  = mappings[predicted_pos]
+                connect(node, node2)
+                log("F added")
+        if i==3:
+            if not API.wallRight():
+                predicted_pos = directionMapper('R')
+                node2 = None
+                try : 
+                    node2  = mappings[predicted_pos]
+                except:
+                    mappings[predicted_pos] = Node(*predicted_pos)
+                    node2  = mappings[predicted_pos]
+                connect(node, node2)
+                log("R added")
+                log(node2.pos)
+
+# MAIN FLOODFILL
+def floodfill(node):
+    global x,y
+    scan(node)
+    node.processed = True
+    log(len(node.neighbours))
+    for i in node.neighbours :
+        if not i.processed:
+            apiMove(node, i)
+            x,y = i.x, i.y
+            floodfill(i)
+            apiMove(i, node)
+            x,y = node.x, node.y
 
 def main():
-    global mouse, manager
     head = Node(0,0)
-    mouse = Mouse()
-    manager = Manager()
-    mouse.node = head
-    mouse.scan()
-    traverse(head)
+    floodfill(head)
+
     
 if __name__ == "__main__":
     main()
