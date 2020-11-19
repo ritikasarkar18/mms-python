@@ -114,7 +114,7 @@ def floodfill(node):
     scan(node)
     node.processed = True
     # API.setColor(*node.pos, "r")
-    API.setText(*node.pos, str(node.pos)[1:-1])
+    API.setText(*node.pos, str(node.pos[0])+","+str(node.pos[1]))
     for i in node.neighbours :
         if not i.processed:
             apiMove(node, i)
@@ -127,7 +127,8 @@ def main():
     global mappings
     head = Node(0,0)
     floodfill(head)
-    log("Steps : "+str(steps));
+    mappings[(8,8)].isEnd = True
+    log("Steps : "+str(steps))
     pickle.dump(head, open( "HeadNode.p", "wb"))
     pickle.dump(mappings, open( "Mappings.p", "wb"))
     
