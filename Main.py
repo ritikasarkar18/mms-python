@@ -1,6 +1,7 @@
 import API
 import sys
 import time
+import pickle
 
 def log(string):
     sys.stderr.write("{}\n".format(string))
@@ -139,6 +140,7 @@ def main():
     head = Node(0,0)
     floodfill(head)
     log("Steps : "+str(steps));
+    pickle.dump(head, open( "HeadNode.p", "wb"))
     
 if __name__ == "__main__":
     main()
