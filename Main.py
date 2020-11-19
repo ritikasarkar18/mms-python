@@ -10,18 +10,19 @@ mappings = {}
 current_direction = 0
 x = 0
 y = 0
+steps = 0
 
 direction_to_move = {
         (0,-1)  : 2,
-        (0,1) : 0,
-        (1,0)  : 4,
-        (-1,0) : 1
+        (0,1)   : 0,
+        (1,0)   : 1,
+        (-1,0)  : 3
         }
 
 direction_to_move_inverse = {
-        0 : (0,-1),
-        1 : (0,1),
-        2 : (1,0),
+        2 : (0,-1),
+        0 : (0,1),
+        1 : (1,0),
         3 : (-1,0)
         }
 
@@ -48,19 +49,20 @@ def connect(node1, node2):
 
 # MOVE API FROM SOURCE POSITION TO DESTINATION POSITION
 def apiMove(source, destination):
-    global current_direction
+    global current_direction,steps
+    steps += 1
     dx = destination.x - source.x
     dy = destination.y - source.y
     future_direction = direction_to_move[(dx,dy)]
 
     diff = future_direction-current_direction
-    if(diff==1 or diff==3):
-        API.turnLeft()
+    if(diff==1 or diff==-3):
+        API.turnRight()
     if(diff==2 or diff==-2):
         API.turnLeft()
         API.turnLeft()
-    if(diff==-3 or diff==-1):
-        API.turnRight()
+    if(diff==3 or diff==-1):
+        API.turnLeft()
     API.moveForward()
     current_direction = future_direction
 
@@ -77,12 +79,15 @@ def directionMapper(direction_character):
         d_num = 2
     global_direction = (current_direction+d_num+4)%4
     changes = direction_to_move_inverse[global_direction]
-    return (x-changes[0], y-changes[1])
+    return (x+changes[0], y+changes[1])
 
 
 # SCAN THE NEIGHBOURS OF A NODE
 def scan(node):
-    order = [1,2,3]
+    # order = [3,2,1]
+    # order = [1,2,3]
+    # order = [2,1,3]
+    order = [2,3,1]
 
     for i in order:
         if i==1:
@@ -95,7 +100,6 @@ def scan(node):
                     mappings[predicted_pos] = Node(*predicted_pos)
                     node2  = mappings[predicted_pos]
                 connect(node, node2)
-                log("L added")
         if i==2:
             if not API.wallFront():
                 predicted_pos = directionMapper('U')
@@ -106,7 +110,6 @@ def scan(node):
                     mappings[predicted_pos] = Node(*predicted_pos)
                     node2  = mappings[predicted_pos]
                 connect(node, node2)
-                log("F added")
         if i==3:
             if not API.wallRight():
                 predicted_pos = directionMapper('R')
@@ -117,15 +120,13 @@ def scan(node):
                     mappings[predicted_pos] = Node(*predicted_pos)
                     node2  = mappings[predicted_pos]
                 connect(node, node2)
-                log("R added")
-                log(node2.pos)
 
 # MAIN FLOODFILL
 def floodfill(node):
     global x,y
     scan(node)
     node.processed = True
-    log(len(node.neighbours))
+    API.setColor(*node.pos, "r")
     for i in node.neighbours :
         if not i.processed:
             apiMove(node, i)
@@ -137,7 +138,7 @@ def floodfill(node):
 def main():
     head = Node(0,0)
     floodfill(head)
-
+    log("Steps : "+str(steps));
     
 if __name__ == "__main__":
     main()
