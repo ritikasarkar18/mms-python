@@ -2,6 +2,7 @@ import API
 import sys
 import time
 import pickle
+from Node import Node
 
 def log(string):
     sys.stderr.write("{}\n".format(string))
@@ -26,21 +27,6 @@ direction_to_move_inverse = {
         1 : (1,0),
         3 : (-1,0)
         }
-
-# Node to solve in the shortest path algorithm 
-class Node():
-
-    def __init__(self, x,y):
-        self.x = x
-        self.y = y
-        self.visited = False
-        self.isEnd = False
-        self.neighbours = set({})
-        self.pos = (self.x,self.y)
-        self.processed = False
-
-    def n_neighbours(self):
-        return len(self.children)
 
 # CONNECT 2 NODES
 def connect(node1, node2):
@@ -127,7 +113,8 @@ def floodfill(node):
     global x,y
     scan(node)
     node.processed = True
-    API.setColor(*node.pos, "r")
+    # API.setColor(*node.pos, "r")
+    API.setText(*node.pos, str(node.pos)[1:-1])
     for i in node.neighbours :
         if not i.processed:
             apiMove(node, i)
@@ -137,10 +124,12 @@ def floodfill(node):
             x,y = node.x, node.y
 
 def main():
+    global mappings
     head = Node(0,0)
     floodfill(head)
     log("Steps : "+str(steps));
     pickle.dump(head, open( "HeadNode.p", "wb"))
+    pickle.dump(mappings, open( "Mappings.p", "wb"))
     
 if __name__ == "__main__":
     main()
