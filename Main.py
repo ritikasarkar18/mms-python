@@ -112,7 +112,7 @@ def scan(node):
                 connect(node, node2)
 
 # MAIN FLOODFILL
-def floodfill(node):
+def floodfill(node,var):
     global x,y
     scan(node)
     node.processed = True
@@ -120,20 +120,29 @@ def floodfill(node):
     API.setText(*node.pos, str(node.pos[0])+","+str(node.pos[1]))
     for i in node.neighbours :
         if not i.processed:
+            i.var = var+1
             apiMove(node, i)
             x,y = i.x, i.y
-            floodfill(i)
+            floodfill(i,var+1)
             apiMove(i, node)
             x,y = node.x, node.y
+        else:
+            if i.var==var-3:
+                i.isEnd = True
 
 def main():
     global mappings
     head = Node(0,0)
-    floodfill(head)
+    head.var = 0
+    floodfill(head,0)
     
     # SAMPLE END
-    mappings[(8,8)].isEnd = True
+    # mappings[(8,8)].isEnd = True
+    
+    # LOGGING STEPS
     log("Steps : "+str(steps))
+
+    # REAL ENDING SEARCHING
 
     # FOR SAVING PURPOSES AND INDEPENDENT ANALYSIS
     pickle.dump(head, open( "HeadNode.p", "wb"))
