@@ -1,7 +1,7 @@
 # mms-python
 
 For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.<br>
-Credits to [Ritika Sarkar](https://github.com/ritikasarkar18) for collaborating by implementing the Shortest Path Finding algorithm for the graph.
+Credits to [Pratik Garai](https://github.com/PratikGarai) for collaborating by implementing Maze Exploration using Floodfill for the graph.
 
 ## Approach Used
 
