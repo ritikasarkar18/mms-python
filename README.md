@@ -1,6 +1,18 @@
 # mms-python
 
 For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.
+Credits to [Ritika Sarkar](https://github.com/ritikasarkar18) for collaborating by implementing the Shortest Path Finding algorithm for the graph.
+
+## Approach Used
+
+- Floodfill algorithm for maze traversal
+- Create a graph simultaneously while traversing the maze
+- Use the generated graph to find shortest path using BFS
+
+## Advantages of the used approach
+
+- Size of maze doesn't matter
+- Works for finishing point located anywhere in the maze (not only the center)
 
 ## Notes
 
