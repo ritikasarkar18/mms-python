@@ -19,16 +19,17 @@ class Grapher():
                     new_path.append(neighbour) 
                     queue.append(new_path)
                     if neighbour.isEnd:
-                        print("Shortest path = ")
                         return new_path
                     visited.append(node)
-        print("Connecting path doesn't exist")
-        return
+        return None
 
 if __name__ == "__main__":
     head = pickle.load(open("HeadNode.p", "rb"))
     g = Grapher(head)
     path = g.ShortestPath()
-    print("Length : ", len(path))
-    for i in path :
-        print(i.pos, end = " , ")
+    if path :
+        print("Length : ", len(path))
+        for i in path :
+            print(i.pos, end = " , ")
+    else:
+        print("No path")

@@ -3,6 +3,7 @@ import sys
 import time
 import pickle
 from Node import Node
+from BFS import Grapher
 
 def log(string):
     sys.stderr.write("{}\n".format(string))
@@ -36,6 +37,8 @@ def connect(node1, node2):
 
 # MOVE API FROM SOURCE POSITION TO DESTINATION POSITION
 def apiMove(source, destination):
+    if source.pos == destination.pos :
+        return
     global current_direction,steps
     steps += 1
     dx = destination.x - source.x
@@ -127,10 +130,34 @@ def main():
     global mappings
     head = Node(0,0)
     floodfill(head)
+    
+    # SAMPLE END
     mappings[(8,8)].isEnd = True
     log("Steps : "+str(steps))
+
+    # FOR SAVING PURPOSES AND INDEPENDENT ANALYSIS
     pickle.dump(head, open( "HeadNode.p", "wb"))
     pickle.dump(mappings, open( "Mappings.p", "wb"))
+
+    # PATH FINDING
+    g = Grapher(head)
+    path = g.ShortestPath()
+
+    # FRESH RUN
+    if path:
+        log("Path Found")
+        log("Length : "+str(len(path)))
+        curr = head
+        API.setText(*curr.pos,'0')
+        for ind,i in enumerate(path):
+            API.setText(*curr.pos,str(ind))
+            API.setColor(*curr.pos, 'b')
+            apiMove(curr, i)
+            curr = i
+        log("Reached")
+
+    else :
+        log("No path found :(")
     
 if __name__ == "__main__":
     main()
