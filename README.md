@@ -1,10 +1,18 @@
 # mms-python
 
-For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.
+For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse simulator.<br>
+Credits to [Ritika Sarkar](https://github.com/ritikasarkar18) for collaborating by implementing the Shortest Path Finding algorithm for the graph.
 
-## IMPORTANT VALUES
+## Approach Used
 
-- <b>REVERSE_OPENINGS</b> This value in the Main.py file controls the algorithm used by the mouse. "True" will set it to right preference and "False" will set it to left preference. 
+- Floodfill algorithm for maze traversal
+- Create a graph simultaneously while traversing the maze
+- Use the generated graph to find shortest path using BFS
+
+## Advantages of the used approach
+
+- Size of maze doesn't matter
+- Works for finishing point located anywhere in the maze (not only the center)
 
 ## Notes
 
@@ -18,4 +26,3 @@ For use with [mackorone/mms](https://github.com/mackorone/mms), a Micromouse sim
 1. Run the simulator and click the "+" button to configure a new algorithm
 1. Enter the config for your algorithm (name, directory, and run command)
 1. Click the "Run" button
-
